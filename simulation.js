@@ -7,10 +7,14 @@ var mapHeight = 12;
 var mapSize = mapWidth * mapHeight;
 var row = 0;
 var column = 0;
+var plateCount = 9;
 var initialPlateWidth = mapWidth / 3;
 var initialPlateHeight = mapHeight / 3;
-var tiles = [];
+var plateAttributes = [];
 var plates = [];
+var tileAttributes = [];
+var i;
+var j;
 
 // Rendering Variables
 
@@ -30,19 +34,78 @@ var colors = {
 
 function gen() {
 	console.log("Generating Map...");
+	plateAttributes = [];
+	for (i = 0; i < 9; i+=1) {
+		if (i >= plateCount) {
+			plateAttributes.push("empty");
+		} else {
+			var choice; 
+			choice = Math.floor(Math.random() * 3);
+			if (choice == 0) {
+				plateAttributes.push("continental");
+			} else {
+				plateAttributes.push("oceanic");
+			}
+		}
+	};
+	console.log(plateAttributes);
+	plates = [];
+	for (i = 0; i < 9; i+=1) {
+		plates.push([]);
+	}
+	for (i = 0; i < 9; i+=1) {
+		for (j = 0; j < mapSize; j+=1) {
+			plates[i].push(false);
+		}
+	}
+	genSquarePlate(0, 0);
+	genSquarePlate(1, 4);
+	genSquarePlate(2, 8);
+	genSquarePlate(3, 48);
+	genSquarePlate(4, 52);
+	genSquarePlate(5, 56);
+	genSquarePlate(6, 96);
+	genSquarePlate(7, 100);
+	genSquarePlate(8, 104);
+	console.log(plates);
 	drawGrid();
 	drawBoundaries();
-	line(40, 0, 40, 40, 6);
-	line(40, 40, 80, 40, 6);
-	line(80, 40, 80, 0, 6);
-	line(40, 0, 80, 0, 6);
+	//line(40, 0, 40, 40, 6);
+	//line(40, 40, 80, 40, 6);
+	//line(80, 40, 80, 0, 6);
+	//line(40, 0, 80, 0, 6);
 	console.log("Map Generated!");
+};
+function genSquarePlate(plate, offset) {
+	for (i = 0; i < offset; i+=1) {
+		plates[plate][i] = false;
+	};
+	for (i = offset; i < offset + 4; i+=1) {
+		plates[plate][i] = true;
+	};
+	for (i = offset + 4; i < offset + 12; i+=1) {
+		plates[plate][i] = false;
+	};
+	for (i = offset + 12; i < offset + 16; i+=1) {
+		plates[plate][i] = true;
+	};
+	for (i = offset + 16; i < offset + 24; i+=1) {
+		plates[plate][i] = false;
+	};
+	for (i = offset + 24; i < offset + 28; i+=1) {
+		plates[plate][i] = true;
+	};
+	for (i = offset + 28; i < mapSize; i+=1) {
+		plates[plate][i] = false;
+	};
 };
 function move() {
 	console.log("Moving Plates...");
+	console.log("There is nothing to move yet.");
 };
 function resolve() {
 	console.log("Allocating Tiles...");
+	console.log("There is nothing to allocate yet.");
 };
 
 // Rendering Functions
@@ -64,7 +127,6 @@ function drawGrid() {
 	ctx.clearRect(0, 0, mapWidth, mapHeight)
 	var row = 0;
 	var column = 0;
-	var i;
 	for (i = 0; i < mapSize; i+=1) {
 		square(row * tileSize, column * tileSize, borderWidth);
 		row += 1;
