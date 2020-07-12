@@ -138,7 +138,14 @@ function drawBoundaries() {
 	//Horizontal Boundaries
 	for (i = 0; i < plateCount; i+=1) {
 		for (j = 0; j < mapSize; j+=1) {
-			if (plates[i][j] !== plates[i][j + 1]) {
+			if ((j + 1) % 12 == 0) {
+				if (plates[i][j] !== plates[i][j - 11]) {
+					console.log("hb");
+					line((j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
+				} else {
+					console.log("nhb");
+				};
+			} else if (plates[i][j] !== plates[i][j + 1]) {
 				console.log("hb");
 				line((j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
 			} else {
@@ -147,9 +154,16 @@ function drawBoundaries() {
 		};
 	};
 	//Vertical Boundaries
-		for (i = 0; i < plateCount; i+=1) {
+	for (i = 0; i < plateCount; i+=1) {
 		for (j = 0; j < mapSize; j+=1) {
-			if (plates[i][j] !== plates[i][j + 12]) {
+			if (j + 12 > mapSize) {
+				if (plates[i][j] !== plates[i][j - 132]) {
+					console.log("vb");
+					line((j % 12) * tileSize, Math.floor(j / 12) * tileSize + tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
+				} else {
+					console.log("nvb");
+				};
+			} else if (plates[i][j] !== plates[i][j + 12]) {
 				console.log("vb");
 				line((j % 12) * tileSize, Math.floor(j / 12) * tileSize + tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
 			} else {
