@@ -22,9 +22,9 @@ var canvas = document.getElementById("art");
 var ctx = art.getContext("2d");
 var tileSize = 40;
 var borderWidth = 3;
-var boundaryWidth = 6;
+var boundaryWidth = 8;
 var colors = {
-	border:"#333",
+	border:"#050",
 	boundary:"#000",
 	oceanic:"#4BF",
 	continental:"#9E4",
@@ -35,25 +35,21 @@ var colors = {
 function gen() {
 	console.log("Generating Map...");
 	plateAttributes = [];
-	for (i = 0; i < 9; i+=1) {
-		if (i >= plateCount) {
-			plateAttributes.push("empty");
+	for (i = 0; i < plateCount; i+=1) {
+		var choice; 
+		choice = Math.floor(Math.random() * 3);
+		if (choice == 0) {
+			plateAttributes.push("continental");
 		} else {
-			var choice; 
-			choice = Math.floor(Math.random() * 3);
-			if (choice == 0) {
-				plateAttributes.push("continental");
-			} else {
-				plateAttributes.push("oceanic");
-			}
+			plateAttributes.push("oceanic");
 		}
 	};
 	console.log(plateAttributes);
 	plates = [];
-	for (i = 0; i < 9; i+=1) {
+	for (i = 0; i < plateCount; i+=1) {
 		plates.push([]);
 	}
-	for (i = 0; i < 9; i+=1) {
+	for (i = 0; i < plateCount; i+=1) {
 		for (j = 0; j < mapSize; j+=1) {
 			plates[i].push(false);
 		}
@@ -70,10 +66,6 @@ function gen() {
 	console.log(plates);
 	drawGrid();
 	drawBoundaries();
-	//line(40, 0, 40, 40, 6);
-	//line(40, 40, 80, 40, 6);
-	//line(80, 40, 80, 0, 6);
-	//line(40, 0, 80, 0, 6);
 	console.log("Map Generated!");
 };
 function genSquarePlate(plate, offset) {
@@ -95,7 +87,13 @@ function genSquarePlate(plate, offset) {
 	for (i = offset + 24; i < offset + 28; i+=1) {
 		plates[plate][i] = true;
 	};
-	for (i = offset + 28; i < mapSize; i+=1) {
+	for (i = offset + 28; i < offset + 36; i+=1) {
+		plates[plate][i] = false;
+	};
+	for (i = offset + 36; i < offset + 40; i+=1) {
+		plates[plate][i] = true;
+	};
+	for (i = offset + 40; i < mapSize; i+=1) {
 		plates[plate][i] = false;
 	};
 };
@@ -137,7 +135,28 @@ function drawGrid() {
 	}
 };
 function drawBoundaries() {
-	// will be added later
+	//Horizontal Boundaries
+	for (i = 0; i < plateCount; i+=1) {
+		for (j = 0; j < mapSize; j+=1) {
+			if (plates[i][j] !== plates[i][j + 1]) {
+				console.log("hb");
+				line((j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
+			} else {
+				console.log("nhb");
+			};
+		};
+	};
+	//Vertical Boundaries
+		for (i = 0; i < plateCount; i+=1) {
+		for (j = 0; j < mapSize; j+=1) {
+			if (plates[i][j] !== plates[i][j + 12]) {
+				console.log("vb");
+				line((j % 12) * tileSize, Math.floor(j / 12) * tileSize + tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
+			} else {
+				console.log("nvb");
+			};
+		};
+	};
 };
 
 // Buttons
