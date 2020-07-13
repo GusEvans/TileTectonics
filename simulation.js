@@ -8,11 +8,11 @@ var mapSize = mapWidth * mapHeight;
 var row = 0;
 var column = 0;
 var plateCount = 9;
-var initialPlateWidth = mapWidth / 3;
-var initialPlateHeight = mapHeight / 3;
-var plateAttributes = [];
 var plates = [];
-var tileAttributes = [];
+var plateTypes = [];
+var plateMoves = [];
+var plateMoveOptions = ["u", "r", "l", "d"];
+var tempPlate = [];
 var i;
 var j;
 
@@ -34,17 +34,22 @@ var colors = {
 
 function gen() {
 	console.log("Generating Map...");
-	plateAttributes = [];
+	plateTypes = [];
 	for (i = 0; i < plateCount; i+=1) {
-		var choice; 
-		choice = Math.floor(Math.random() * 3);
-		if (choice == 0) {
-			plateAttributes.push("continental");
+		j = Math.floor(Math.random() * 3);
+		if (j == 0) {
+			plateTypes.push("continental");
 		} else {
-			plateAttributes.push("oceanic");
+			plateTypes.push("oceanic");
 		}
 	};
-	console.log(plateAttributes);
+	console.log(plateTypes);
+	plateMoves = [];
+	for (i = 0; i < plateCount; i+=1) {
+		j = Math.floor(Math.random() * plateMoveOptions.length);
+		plateMoves[i] = plateMoveOptions[j];
+	};
+	console.log(plateMoves);
 	plates = [];
 	for (i = 0; i < plateCount; i+=1) {
 		plates.push([]);
@@ -99,7 +104,55 @@ function genSquarePlate(plate, offset) {
 };
 function move() {
 	console.log("Moving Plates...");
-	console.log("There is nothing to move yet.");
+	for (i = 0; i < plateCount; i+=1) {
+		tempPlate = [];
+		if (plateMoves[i] == "r") {
+			console.log("Moving to the right!");
+			for (j = 0; j < mapSize; j+=1){
+				if ((j + 1) % 12 == 0) {
+					tempPlate[j - 11] = plates[i][j];
+				} else {
+					tempPlate[j + 1] = plates[i][j];
+				};
+			};
+			plates[i] = tempPlate;
+		};
+		if (plateMoves[i] == "l") {
+			console.log("Moving to the left!");
+			for (j = 0; j < mapSize; j+=1){
+				if ((j - 1) % 12 == 11 || j <= 0) {
+					tempPlate[j + 11] = plates[i][j];
+				} else {
+					tempPlate[j - 1] = plates[i][j];
+				};
+			};
+			plates[i] = tempPlate;
+		};
+		if (plateMoves[i] == "d") {
+			console.log("Moving to the down!");
+			for (j = 0; j < mapSize; j+=1){
+				if ((j + 12) >= mapSize) {
+					tempPlate[j - 132] = plates[i][j];
+				} else {
+					tempPlate[j + 12] = plates[i][j];
+				};
+			};
+			plates[i] = tempPlate;
+		};
+		if (plateMoves[i] == "u") {
+			console.log("Moving to the up!");
+			for (j = 0; j < mapSize; j+=1){
+				if ((j - 12) < 0) {
+					tempPlate[j + 132] = plates[i][j];
+				} else {
+					tempPlate[j - 12] = plates[i][j];
+				};
+			};
+			plates[i] = tempPlate;
+		};
+	};
+	console.log(plates);
+	console.log("Plates Moved!");
 };
 function resolve() {
 	console.log("Allocating Tiles...");
@@ -140,16 +193,16 @@ function drawBoundaries() {
 		for (j = 0; j < mapSize; j+=1) {
 			if ((j + 1) % 12 == 0) {
 				if (plates[i][j] !== plates[i][j - 11]) {
-					console.log("hb");
+					//console.log("hb");
 					line((j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
 				} else {
-					console.log("nhb");
+					//console.log("nhb");
 				};
 			} else if (plates[i][j] !== plates[i][j + 1]) {
-				console.log("hb");
+				//console.log("hb");
 				line((j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
 			} else {
-				console.log("nhb");
+				//console.log("nhb");
 			};
 		};
 	};
@@ -158,16 +211,16 @@ function drawBoundaries() {
 		for (j = 0; j < mapSize; j+=1) {
 			if (j + 12 > mapSize) {
 				if (plates[i][j] !== plates[i][j - 132]) {
-					console.log("vb");
+					//console.log("vb");
 					line((j % 12) * tileSize, Math.floor(j / 12) * tileSize + tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
 				} else {
-					console.log("nvb");
+					//console.log("nvb");
 				};
 			} else if (plates[i][j] !== plates[i][j + 12]) {
-				console.log("vb");
+				//console.log("vb");
 				line((j % 12) * tileSize, Math.floor(j / 12) * tileSize + tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
 			} else {
-				console.log("nvb");
+				//console.log("nvb");
 			};
 		};
 	};
