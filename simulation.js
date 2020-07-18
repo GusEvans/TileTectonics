@@ -10,9 +10,9 @@ var plateMoveOptions = ["u", "r", "l", "d"];
 
 var canvas = document.getElementById("art");
 var ctx = art.getContext("2d");
-var tileSize = 40;
-var borderWidth = 3;
-var boundaryWidth = 8;
+var tileSize = 36;
+var borderWidth = 2;
+var boundaryWidth = 6;
 var colors = {
 	background: "FFF",
 	border: "#050",
@@ -84,7 +84,7 @@ function gen() {
 	genSquarePlate(7, 100);
 	genSquarePlate(8, 104);
 	console.log(plates);
-	console.log("Round " + round);
+	document.getElementById('round').innerHTML = "Round: " + round;
 	drawGrid();
 	drawBoundaries();
 	console.log("Map Generated!");
@@ -171,9 +171,9 @@ function move() {
 		};
 	};
 	console.log(plates);
-	console.log("Round " + round);
-	//drawGrid();
-	//drawBoundaries();
+	document.getElementById('round').innerHTML = "Round: " + round;
+	drawGrid();
+	drawBoundaries();
 	console.log("Plates Moved!");
 };
 
@@ -190,12 +190,13 @@ function resolve() {
 				competitors += 1;
 			};
 		};
-		//console.log(competitors);
-		// For now, empty tiles and conflict tiles can be handled the same way (plate type can be ignored)
-		if (competitors !== 1) {
+		if (competitors == 1) {
+			continue;
+		} else {
+			// For now, empty tiles and conflict tiles can be handled the same way (plate type can be ignored)
 			// Find the prominence of plates in nearby tiles
 			conflicts += 1;
-			console.log("Conflict " + conflicts + " on tile " + i)
+			//console.log("Conflict " + conflicts + " on tile " + i)
 			competition = [];
 			for (j = 0; j < plateCount; j+=1) {
 				competition.push(0);
@@ -246,7 +247,7 @@ function resolve() {
 					};
 				};
 			};
-			console.log(competition);
+			//console.log(competition);
 			// Find the highest plate influence
 			mostInfluence = 0;
 			for (j = 0; j < plateCount; j+=1) {
@@ -254,7 +255,7 @@ function resolve() {
 					mostInfluence = competition[j];
 				};
 			};
-			console.log("Highest influence: " + mostInfluence);
+			//console.log("Highest influence: " + mostInfluence);
 			// Find how many plates have the highest influence
 			prominentPlates = 0;
 			for (j = 0; j < plateCount; j+=1) {
@@ -262,12 +263,12 @@ function resolve() {
 					prominentPlates += 1;
 				};
 			};
-			console.log("Prominent plates: " + prominentPlates);
+			//console.log("Prominent plates: " + prominentPlates);
 			if (prominentPlates == 1) {
 				// Award tile to winner of competition
 				for (j = 0; j < plateCount; j+=1) {
 					if (competition[j] == mostInfluence) {
-						console.log("Plate " + j + " has won!");
+						//console.log("Plate " + j + " has won!");
 						for (k = 0; k < plateCount; k+=1) {
 							if (k !== j) {
 								interPlate[k][i] = false;
@@ -277,8 +278,7 @@ function resolve() {
 						};
 					};
 				};
-			};
-			if (prominentPlates !== 1) {
+			} else {
 				// If there isn't a single winner, find the winners
 				winners = [];
 				for (j = 0; j < plateCount; j+=1) {
@@ -286,30 +286,20 @@ function resolve() {
 						winners.push(j);
 					};
 				};
-				console.log(winners);
-				// Find size of each plate (may become a function later)
-				plateSizes = [];
-				for (j = 0; j < plateCount; j+=1) {
-					plateSizes.push(0);
-				};
-				for (j = 0; j < plateCount; j+=1) {
-					for (k = 0; k < mapSize; k+=1) {
-						if (plates[j][k] == true) {
-							plateSizes[j] += 1;
-						};
-					};
-				};
-				console.log(plateSizes);
-				// Eliminate sizes of non-winners (there must be a better way to do this)
+				//console.log(winners);
+				// Find size of each plate
+				findPlateSizes();
+				//console.log(plateSizes);	
+				// Eliminate sizes of non-winners (To do: combine this step with the next one)
 				smallestPlate = 0;
 				for (j = 0; j < plateCount; j+=1) {
 					if (!winners.includes(j)) {
 						plateSizes[j] = mapSize + 1;
 					};
 				};
-				console.log(plateSizes);
+				//console.log(plateSizes);
 				// Allocate tile to winner with lowest size (finally)
-				console.log("Plate " + plateSizes.indexOf(Math.min.apply(null, plateSizes)) + " has won!");
+				//console.log("Plate " + plateSizes.indexOf(Math.min.apply(null, plateSizes)) + " has won!");
 				for (j = 0; j < plateCount; j+=1) {
 					if (j !== plateSizes.indexOf(Math.min.apply(null, plateSizes))) {
 						interPlate[j][i] = false;
@@ -322,10 +312,24 @@ function resolve() {
 	};
 	plates = interPlate;
 	console.log(plates);
-	console.log("Round " + round);
-	//drawGrid();
-	//drawBoundaries();
+	document.getElementById('round').innerHTML = "Round: " + round;
+	drawGrid();
+	drawBoundaries();
 	console.log("Tiles Allocated!");
+};
+function findPlateSizes() {
+	// To do: work out why the sizes change within a round
+	plateSizes = [];
+	for (j = 0; j < plateCount; j+=1) {
+		plateSizes.push(0);
+	};
+	for (j = 0; j < plateCount; j+=1) {
+		for (k = 0; k < mapSize; k+=1) {
+			if (plates[j][k] == true) {
+				plateSizes[j] += 1;
+			};
+		};
+	};
 };
 
 // Rendering Functions
@@ -352,9 +356,10 @@ function line(sx, sy, ex, ey, t) {
 	ctx.strokeStyle = colors.boundary;
 	ctx.lineCap = "square";
 	ctx.lineWidth = t;
+	ctx.beginPath();
 	ctx.moveTo(sx,sy);
 	ctx.lineTo(ex,ey);
-	ctx.stroke()
+	ctx.stroke();
 };
 function drawBoundaries() {
 	// To do: reduce dependence on the number 12
@@ -382,7 +387,7 @@ function drawBoundaries() {
 	// Vertical Boundaries
 	for (i = 0; i < plateCount; i+=1) {
 		for (j = 0; j < mapSize; j+=1) {
-			if (j + 12 > mapSize) {
+			if (j + 12 >= mapSize) {
 				if (plates[i][j] !== plates[i][j - 132]) {
 					//console.log("vb");
 					line((j % 12) * tileSize, Math.floor(j / 12) * tileSize + tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
@@ -399,7 +404,7 @@ function drawBoundaries() {
 			};
 		};
 	};
-	console.log("Lines drawn: " + lineCount);
+	//console.log("Lines drawn: " + lineCount);
 };
 
 // Buttons
