@@ -6,7 +6,7 @@ var mapWidth = 12;
 var mapHeight = 12;
 var mapSize = mapWidth * mapHeight;
 var plateCount = 9;
-var plateMoveOptions = ["u", "r", "l", "d"];
+var plateMoveOptions = ["u", "r", "l", "d"]; // To do: add more of these
 
 var canvas = document.getElementById("art");
 var ctx = art.getContext("2d");
@@ -14,12 +14,15 @@ var tileSize = 36;
 var borderWidth = 2;
 var boundaryWidth = 6;
 var colors = {
-	background: "FFF",
-	border: "#050",
+	border: "#FFF",
 	boundary: "#000",
-	oceanic: "#4BF",
-	continental: "#9E4"
+	oceanic: "#29D",
+	continental: "#8C2",
+	conflict: "#E22",
+	empty: "#DDD"
 };
+var continentalColors = ["#DA1", "#FC3", "#FE7", "#DE2", "#9E1", "#6C2", "#4F5", "#0B4", "#7E9"];
+var oceanicColors = ["#7EE", "#0CF", "#38B", "#48F", "#12D", "#98E", "#73E", "#B5E", "#E9E"];
 
 // Changing Variables
 
@@ -34,6 +37,7 @@ var tempPlate = [];
 var interPlate = [];
 var competition = [];
 var winners = [];
+var tileColor = [];
 var round;
 var conflicts;
 var competitors;
@@ -47,8 +51,9 @@ var lineCount;
 // Simulation Functions
 
 function gen() {
-	console.log("Generating Map...");
+	//console.log("Generating Map...");
 	round = 0;
+	// To do: add a use for plate types
 	plateTypes = [];
 	for (i = 0; i < plateCount; i+=1) {
 		j = Math.floor(Math.random() * 3);
@@ -56,7 +61,7 @@ function gen() {
 			plateTypes.push("continental");
 		} else {
 			plateTypes.push("oceanic");
-		}
+		};
 	};
 	console.log(plateTypes);
 	plateMoves = [];
@@ -68,12 +73,12 @@ function gen() {
 	plates = [];
 	for (i = 0; i < plateCount; i+=1) {
 		plates.push([]);
-	}
+	};
 	for (i = 0; i < plateCount; i+=1) {
 		for (j = 0; j < mapSize; j+=1) {
 			plates[i].push(false);
-		}
-	}
+		};
+	};
 	genSquarePlate(0, 0);
 	genSquarePlate(1, 4);
 	genSquarePlate(2, 8);
@@ -85,12 +90,11 @@ function gen() {
 	genSquarePlate(8, 104);
 	console.log(plates);
 	document.getElementById('round').innerHTML = "Round: " + round;
-	drawGrid();
-	drawBoundaries();
+	render();
 	console.log("Map Generated!");
 };
 function genSquarePlate(plate, offset) {
-	// Currently inefficient; will be generalized and put into main function later
+	// To do: generalize this process and make it more efficient
 	for (i = 0; i < offset; i+=1) {
 		plates[plate][i] = false;
 	};
@@ -121,15 +125,15 @@ function genSquarePlate(plate, offset) {
 };
 
 function move() {
-	console.log("Moving Plates...");
+	//console.log("Moving Plates...");
 	round += 0.5;
 	for (i = 0; i < plateCount; i+=1) {
 		tempPlate = [];
 		if (plateMoves[i] == "r") {
 			//console.log("Moving to the right!");
 			for (j = 0; j < mapSize; j+=1){
-				if ((j + 1) % 12 == 0) {
-					tempPlate[j - 11] = plates[i][j];
+				if ((j + 1) % mapWidth == 0) {
+					tempPlate[j - mapWidth + 1] = plates[i][j];
 				} else {
 					tempPlate[j + 1] = plates[i][j];
 				};
@@ -139,8 +143,8 @@ function move() {
 		if (plateMoves[i] == "l") {
 			//console.log("Moving to the left!");
 			for (j = 0; j < mapSize; j+=1){
-				if ((j - 1) % 12 == 11 || j <= 0) {
-					tempPlate[j + 11] = plates[i][j];
+				if ((j - 1) % mapWidth == mapWidth - 1 || j <= 0) {
+					tempPlate[j + mapWidth - 1] = plates[i][j];
 				} else {
 					tempPlate[j - 1] = plates[i][j];
 				};
@@ -150,10 +154,10 @@ function move() {
 		if (plateMoves[i] == "d") {
 			//console.log("Moving to the down!");
 			for (j = 0; j < mapSize; j+=1){
-				if ((j + 12) >= mapSize) {
-					tempPlate[j - 132] = plates[i][j];
+				if ((j + mapWidth) >= mapSize) {
+					tempPlate[j - mapSize + mapWidth] = plates[i][j];
 				} else {
-					tempPlate[j + 12] = plates[i][j];
+					tempPlate[j + mapWidth] = plates[i][j];
 				};
 			};
 			plates[i] = tempPlate;
@@ -161,10 +165,10 @@ function move() {
 		if (plateMoves[i] == "u") {
 			//console.log("Moving to the up!");
 			for (j = 0; j < mapSize; j+=1){
-				if ((j - 12) < 0) {
-					tempPlate[j + 132] = plates[i][j];
+				if ((j - mapWidth) < 0) {
+					tempPlate[j + mapSize - mapWidth] = plates[i][j];
 				} else {
-					tempPlate[j - 12] = plates[i][j];
+					tempPlate[j - mapWidth] = plates[i][j];
 				};
 			};
 			plates[i] = tempPlate;
@@ -172,13 +176,12 @@ function move() {
 	};
 	console.log(plates);
 	document.getElementById('round').innerHTML = "Round: " + round;
-	drawGrid();
-	drawBoundaries();
+	render();
 	console.log("Plates Moved!");
 };
 
 function resolve() {
-	console.log("Allocating Tiles...");
+	//console.log("Allocating Tiles...");
 	round += 0.5;
 	conflicts = 0;
 	interPlate = plates;
@@ -207,8 +210,8 @@ function resolve() {
 					competition[j] += 1;
 				};
 				// Right tile
-				if ((i + 1) % 12 == 0) {
-					if (plates[j][i - 11] == true) {
+				if ((i + 1) % mapWidth == 0) {
+					if (plates[j][i - mapWidth + 1] == true) {
 						competition[j] += 1;
 					};
 				} else {
@@ -217,8 +220,8 @@ function resolve() {
 					};
 				};
 				// Left tile
-				if ((i - 1) % 12 == 11) {
-					if (plates[j][i + 11] == true) {
+				if ((i - 1) % mapWidth == mapWidth - 1) {
+					if (plates[j][i + mapWidth - 1] == true) {
 						competition[j] += 1;
 					};
 				} else {
@@ -227,22 +230,22 @@ function resolve() {
 					};
 				};
 				// Down tile
-				if (i + 12 >= mapSize) {
-					if (plates[j][i - 132] == true) {
+				if (i + mapWidth >= mapSize) {
+					if (plates[j][i - mapSize + mapWidth] == true) {
 						competition[j] += 1;
 					};
 				} else {
-					if (plates[j][i + 12] == true) {
+					if (plates[j][i + mapWidth] == true) {
 						competition[j] += 1;
 					};
 				};
 				// Up tile
-				if (i - 12 < 0) {
-					if (plates[j][i + 132] == true) {
+				if (i - mapWidth < 0) {
+					if (plates[j][i + mapSize - mapWidth] == true) {
 						competition[j] += 1;
 					};
 				} else {
-					if (plates[j][i - 12] == true) {
+					if (plates[j][i - mapWidth] == true) {
 						competition[j] += 1;
 					};
 				};
@@ -313,8 +316,7 @@ function resolve() {
 	plates = interPlate;
 	console.log(plates);
 	document.getElementById('round').innerHTML = "Round: " + round;
-	drawGrid();
-	drawBoundaries();
+	render();
 	console.log("Tiles Allocated!");
 };
 function findPlateSizes() {
@@ -332,26 +334,64 @@ function findPlateSizes() {
 	};
 };
 
+function moveResolve() {
+	move();
+	resolve();
+};
+
 // Rendering Functions
 
-function square(sx, sy, t) {
-	ctx.strokeStyle = colors.border;
-	ctx.lineWidth = t;
-	ctx.strokeRect(sx, sy, tileSize, tileSize)
+function render() {
+	drawGrid();
+	drawBoundaries();
 };
+
+function square(sx, sy, col) {
+	ctx.strokeStyle = colors.border;
+	ctx.lineWidth = borderWidth;
+	ctx.fillStyle = col;
+	ctx.fillRect(sx, sy, tileSize, tileSize);
+	ctx.strokeRect(sx, sy, tileSize, tileSize);
+};
+
 function drawGrid() {
 	ctx.clearRect(0, 0, 480, 480);
 	row = 0;
 	column = 0;
 	for (i = 0; i < mapSize; i+=1) {
-		square(row * tileSize, column * tileSize, borderWidth);
-		row += 1;
-		if (row >= mapWidth) {
-			column += 1;
-			row = 0
-		}
-	}
+		tileColor = [];
+		for (j = 0; j < plateCount; j+=1){
+			if (plates[j][i] == true) {
+				tileColor.push(j);
+			};
+		};
+		//console.log(tileColor);
+		if (tileColor.length == 0) {
+			square(column * tileSize, row * tileSize, colors.empty,);
+			//console.log("empty");
+		};
+		if (tileColor.length > 1) {
+			square(column * tileSize, row * tileSize, colors.conflict,);
+			//console.log("conflict");
+		};
+		if (tileColor.length == 1) {
+			if (plateTypes[tileColor[0]] == "continental") {
+				square(column * tileSize, row * tileSize, continentalColors[tileColor[0]],);
+				//console.log("continental");
+			};
+			if (plateTypes[tileColor[0]] == "oceanic") {
+				square(column * tileSize, row * tileSize, oceanicColors[tileColor[0]],);
+				//console.log("oceanic");
+			};
+		};
+		column += 1;
+		if (column >= mapWidth) {
+			row += 1;
+			column = 0;
+		};
+	};
 };
+
 function line(sx, sy, ex, ey, t) {
 	ctx.strokeStyle = colors.boundary;
 	ctx.lineCap = "square";
@@ -360,25 +400,28 @@ function line(sx, sy, ex, ey, t) {
 	ctx.moveTo(sx,sy);
 	ctx.lineTo(ex,ey);
 	ctx.stroke();
+	lineCount += 1;
 };
+
 function drawBoundaries() {
-	// To do: reduce dependence on the number 12
 	lineCount = 0;
 	// Horizontal Boundaries
 	for (i = 0; i < plateCount; i+=1) {
 		for (j = 0; j < mapSize; j+=1) {
-			if ((j + 1) % 12 == 0) {
-				if (plates[i][j] !== plates[i][j - 11]) {
+			if ((j + 1) % mapWidth == 0) {
+				if (plates[i][j] !== plates[i][j - mapWidth + 1]) {
 					//console.log("hb");
-					line((j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
-					lineCount += 1;
+					// Go to top-right and draw down
+					line((j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize, (j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, boundaryWidth);
+					// Then go to left edge of map and draw down
+					line(0, Math.floor(j / mapWidth) * tileSize, 0, Math.floor(j / mapWidth) * tileSize + tileSize, boundaryWidth);
 				} else {
 					//console.log("nhb");
 				};
 			} else if (plates[i][j] !== plates[i][j + 1]) {
 				//console.log("hb");
-				line((j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
-				lineCount += 1;
+				// Go to top-right and draw down
+				line((j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize, (j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, boundaryWidth);
 			} else {
 				//console.log("nhb");
 			};
@@ -387,18 +430,20 @@ function drawBoundaries() {
 	// Vertical Boundaries
 	for (i = 0; i < plateCount; i+=1) {
 		for (j = 0; j < mapSize; j+=1) {
-			if (j + 12 >= mapSize) {
-				if (plates[i][j] !== plates[i][j - 132]) {
+			if (j + mapWidth >= mapSize) {
+				if (plates[i][j] !== plates[i][j - mapSize + mapWidth]) {
 					//console.log("vb");
-					line((j % 12) * tileSize, Math.floor(j / 12) * tileSize + tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
-					lineCount += 1;
+					// Go to bottom-left and draw right
+					line((j % mapWidth) * tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, (j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, boundaryWidth);
+					// Then go to top edge of map and draw right
+					line((j % mapWidth) * tileSize, 0, (j % mapWidth) * tileSize + tileSize, 0, boundaryWidth);
 				} else {
 					//console.log("nvb");
 				};
-			} else if (plates[i][j] !== plates[i][j + 12]) {
+			} else if (plates[i][j] !== plates[i][j + mapWidth]) {
 				//console.log("vb");
-				line((j % 12) * tileSize, Math.floor(j / 12) * tileSize + tileSize, (j % 12) * tileSize + tileSize, Math.floor(j / 12) * tileSize + tileSize, boundaryWidth);
-				lineCount += 1;
+				// Go to bottom-left and draw right
+				line((j % mapWidth) * tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, (j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, boundaryWidth);
 			} else {
 				//console.log("nvb");
 			};
@@ -407,8 +452,9 @@ function drawBoundaries() {
 	//console.log("Lines drawn: " + lineCount);
 };
 
-// Buttons
+// Controls
 
 document.getElementById('gen').addEventListener('click', gen);
 document.getElementById('move').addEventListener('click', move);
 document.getElementById('resolve').addEventListener('click', resolve);
+document.getElementById('fast').addEventListener('click', moveResolve);
