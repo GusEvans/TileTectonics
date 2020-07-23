@@ -1,13 +1,14 @@
 'use strict';
 
-// Preset Variables
+/* Preset Variables */
 
 var mapWidth = 12;
 var mapHeight = 12;
 var mapSize = mapWidth * mapHeight;
 var plateCount = 9;
-var plateMoveOptions = ["u", "r", "l", "d"]; // To do: add more of these
-
+var plateMoveOptions = ["u", "r", "l", "d", "ur", "ul", "ru", "rd", "dr", "dl", "lu", "ld",
+	"uur", "uru", "ruu", "uul", "ulu", "luu", "rru", "rur", "urr", "rrd", "rdr", "drr",
+	"ddr", "drd", "rdd", "ddl", "dld", "ldd", "llu", "lul", "ull", "lld", "ldl", "dll"];
 var canvas = document.getElementById("art");
 var ctx = art.getContext("2d");
 var tileSize = 36;
@@ -21,10 +22,10 @@ var colors = {
 	conflict: "#E22",
 	empty: "#DDD"
 };
-var continentalColors = ["#DA1", "#FC3", "#FE7", "#DE2", "#9E1", "#6C2", "#4F5", "#0B4", "#7E9"];
+var continentalColors = ["#DA1", "#FC3", "#FE7", "#DE2", "#9E1", "#6C2", "#4F5", "#093", "#7E9"];
 var oceanicColors = ["#7EE", "#0CF", "#38B", "#48F", "#12D", "#98E", "#73E", "#B5E", "#E9E"];
 
-// Changing Variables
+/* Changing Variables */
 
 var i;
 var j;
@@ -48,12 +49,12 @@ var row;
 var column;
 var lineCount;
 
-// Simulation Functions
+/* Simulation Functions */
 
 function gen() {
 	//console.log("Generating Map...");
 	round = 0;
-	// To do: add a use for plate types
+	/* To do: add a use for plate types */
 	plateTypes = [];
 	for (i = 0; i < plateCount; i+=1) {
 		j = Math.floor(Math.random() * 3);
@@ -88,13 +89,13 @@ function gen() {
 	genSquarePlate(6, 96);
 	genSquarePlate(7, 100);
 	genSquarePlate(8, 104);
-	console.log(plates);
+	//console.log(plates);
 	document.getElementById('round').innerHTML = "Round: " + round;
 	render();
 	console.log("Map Generated!");
 };
 function genSquarePlate(plate, offset) {
-	// To do: generalize this process and make it more efficient
+	/* To do: generalize this process and make it more efficient */
 	for (i = 0; i < offset; i+=1) {
 		plates[plate][i] = false;
 	};
@@ -129,9 +130,9 @@ function move() {
 	round += 0.5;
 	for (i = 0; i < plateCount; i+=1) {
 		tempPlate = [];
-		if (plateMoves[i] == "r") {
+		if (plateMoves[i][0] == "r") {
 			//console.log("Moving to the right!");
-			for (j = 0; j < mapSize; j+=1){
+			for (j = 0; j < mapSize; j+=1) {
 				if ((j + 1) % mapWidth == 0) {
 					tempPlate[j - mapWidth + 1] = plates[i][j];
 				} else {
@@ -139,8 +140,15 @@ function move() {
 				};
 			};
 			plates[i] = tempPlate;
+			if (plateMoves[i].length == 2) {
+				plateMoves[i] = plateMoves[i][1] + "r";
+			};
+			if (plateMoves[i].length == 3) {
+				plateMoves[i] = plateMoves[i][1] + plateMoves[i][2] + "r";
+			};
+			continue;
 		};
-		if (plateMoves[i] == "l") {
+		if (plateMoves[i][0] == "l") {
 			//console.log("Moving to the left!");
 			for (j = 0; j < mapSize; j+=1){
 				if ((j - 1) % mapWidth == mapWidth - 1 || j <= 0) {
@@ -150,8 +158,15 @@ function move() {
 				};
 			};
 			plates[i] = tempPlate;
+			if (plateMoves[i].length == 2) {
+				plateMoves[i] = plateMoves[i][1] + "l";
+			};
+			if (plateMoves[i].length == 3) {
+				plateMoves[i] = plateMoves[i][1] + plateMoves[i][2] + "l";
+			};
+			continue;
 		};
-		if (plateMoves[i] == "d") {
+		if (plateMoves[i][0] == "d") {
 			//console.log("Moving to the down!");
 			for (j = 0; j < mapSize; j+=1){
 				if ((j + mapWidth) >= mapSize) {
@@ -161,8 +176,15 @@ function move() {
 				};
 			};
 			plates[i] = tempPlate;
+			if (plateMoves[i].length == 2) {
+				plateMoves[i] = plateMoves[i][1] + "d";
+			};
+			if (plateMoves[i].length == 3) {
+				plateMoves[i] = plateMoves[i][1] + plateMoves[i][2] + "d";
+			};
+			continue;
 		};
-		if (plateMoves[i] == "u") {
+		if (plateMoves[i][0] == "u") {
 			//console.log("Moving to the up!");
 			for (j = 0; j < mapSize; j+=1){
 				if ((j - mapWidth) < 0) {
@@ -172,9 +194,17 @@ function move() {
 				};
 			};
 			plates[i] = tempPlate;
+			if (plateMoves[i].length == 2) {
+				plateMoves[i] = plateMoves[i][1] + "u";
+			};
+			if (plateMoves[i].length == 3) {
+				plateMoves[i] = plateMoves[i][1] + plateMoves[i][2] + "u";
+			};
+			continue;
 		};
 	};
-	console.log(plates);
+	//console.log(plates);
+	//console.log(plateMoves);
 	document.getElementById('round').innerHTML = "Round: " + round;
 	render();
 	console.log("Plates Moved!");
@@ -184,9 +214,12 @@ function resolve() {
 	//console.log("Allocating Tiles...");
 	round += 0.5;
 	conflicts = 0;
-	interPlate = plates;
+	interPlate = [];
+	for (let el of plates) {
+		interPlate.push(el.slice());
+	};
 	for (i = 0; i < mapSize; i+=1) {
-		// How many plates is tile i in?
+		/* How many plates is tile i in? */
 		competitors = 0;
 		for (j = 0; j < plateCount; j+=1) {
 			if (plates[j][i] == true) {
@@ -196,8 +229,8 @@ function resolve() {
 		if (competitors == 1) {
 			continue;
 		} else {
-			// For now, empty tiles and conflict tiles can be handled the same way (plate type can be ignored)
-			// Find the prominence of plates in nearby tiles
+			/* For now, empty tiles and conflict tiles can be handled the same way (plate type can be ignored) */
+			/* Find the prominence of plates in nearby tiles */
 			conflicts += 1;
 			//console.log("Conflict " + conflicts + " on tile " + i)
 			competition = [];
@@ -205,11 +238,11 @@ function resolve() {
 				competition.push(0);
 			};
 			for (j = 0; j < plateCount; j+=1) {
-				// Target tile
+				/* Target tile */
 				if (plates[j][i] == true) {
 					competition[j] += 1;
 				};
-				// Right tile
+				/* Right tile */
 				if ((i + 1) % mapWidth == 0) {
 					if (plates[j][i - mapWidth + 1] == true) {
 						competition[j] += 1;
@@ -219,7 +252,7 @@ function resolve() {
 						competition[j] += 1;
 					};
 				};
-				// Left tile
+				/* Left tile */
 				if ((i - 1) % mapWidth == mapWidth - 1) {
 					if (plates[j][i + mapWidth - 1] == true) {
 						competition[j] += 1;
@@ -229,7 +262,7 @@ function resolve() {
 						competition[j] += 1;
 					};
 				};
-				// Down tile
+				/* Down tile */
 				if (i + mapWidth >= mapSize) {
 					if (plates[j][i - mapSize + mapWidth] == true) {
 						competition[j] += 1;
@@ -239,7 +272,7 @@ function resolve() {
 						competition[j] += 1;
 					};
 				};
-				// Up tile
+				/* Up tile */
 				if (i - mapWidth < 0) {
 					if (plates[j][i + mapSize - mapWidth] == true) {
 						competition[j] += 1;
@@ -251,7 +284,7 @@ function resolve() {
 				};
 			};
 			//console.log(competition);
-			// Find the highest plate influence
+			/* Find the highest plate influence */
 			mostInfluence = 0;
 			for (j = 0; j < plateCount; j+=1) {
 				if (competition[j] > mostInfluence) {
@@ -259,7 +292,7 @@ function resolve() {
 				};
 			};
 			//console.log("Highest influence: " + mostInfluence);
-			// Find how many plates have the highest influence
+			/* Find how many plates have the highest influence */
 			prominentPlates = 0;
 			for (j = 0; j < plateCount; j+=1) {
 				if (competition[j] == mostInfluence) {
@@ -268,7 +301,7 @@ function resolve() {
 			};
 			//console.log("Prominent plates: " + prominentPlates);
 			if (prominentPlates == 1) {
-				// Award tile to winner of competition
+				/* Award tile to winner of competition */
 				for (j = 0; j < plateCount; j+=1) {
 					if (competition[j] == mostInfluence) {
 						//console.log("Plate " + j + " has won!");
@@ -282,7 +315,7 @@ function resolve() {
 					};
 				};
 			} else {
-				// If there isn't a single winner, find the winners
+				/* If there isn't a single winner, find the winners */
 				winners = [];
 				for (j = 0; j < plateCount; j+=1) {
 					if (competition[j] == mostInfluence) {
@@ -290,10 +323,10 @@ function resolve() {
 					};
 				};
 				//console.log(winners);
-				// Find size of each plate
+				/* Find size of each plate */
 				findPlateSizes();
 				//console.log(plateSizes);	
-				// Eliminate sizes of non-winners (To do: combine this step with the next one)
+				/* Eliminate sizes of non-winners (To do: combine this step with the next one) */
 				smallestPlate = 0;
 				for (j = 0; j < plateCount; j+=1) {
 					if (!winners.includes(j)) {
@@ -301,7 +334,7 @@ function resolve() {
 					};
 				};
 				//console.log(plateSizes);
-				// Allocate tile to winner with lowest size (finally)
+				/* Allocate tile to winner with lowest size (finally) */
 				//console.log("Plate " + plateSizes.indexOf(Math.min.apply(null, plateSizes)) + " has won!");
 				for (j = 0; j < plateCount; j+=1) {
 					if (j !== plateSizes.indexOf(Math.min.apply(null, plateSizes))) {
@@ -314,13 +347,12 @@ function resolve() {
 		};
 	};
 	plates = interPlate;
-	console.log(plates);
+	//console.log(plates);
 	document.getElementById('round').innerHTML = "Round: " + round;
 	render();
 	console.log("Tiles Allocated!");
 };
 function findPlateSizes() {
-	// To do: work out why the sizes change within a round
 	plateSizes = [];
 	for (j = 0; j < plateCount; j+=1) {
 		plateSizes.push(0);
@@ -339,7 +371,7 @@ function moveResolve() {
 	resolve();
 };
 
-// Rendering Functions
+/* Rendering Functions */
 
 function render() {
 	drawGrid();
@@ -405,44 +437,44 @@ function line(sx, sy, ex, ey, t) {
 
 function drawBoundaries() {
 	lineCount = 0;
-	// Horizontal Boundaries
+	/* Horizontal Boundaries */
 	for (i = 0; i < plateCount; i+=1) {
 		for (j = 0; j < mapSize; j+=1) {
 			if ((j + 1) % mapWidth == 0) {
 				if (plates[i][j] !== plates[i][j - mapWidth + 1]) {
 					//console.log("hb");
-					// Go to top-right and draw down
+					/* Go to top-right and draw down */
 					line((j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize, (j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, boundaryWidth);
-					// Then go to left edge of map and draw down
+					/* Then go to left edge of map and draw down */
 					line(0, Math.floor(j / mapWidth) * tileSize, 0, Math.floor(j / mapWidth) * tileSize + tileSize, boundaryWidth);
 				} else {
 					//console.log("nhb");
 				};
 			} else if (plates[i][j] !== plates[i][j + 1]) {
 				//console.log("hb");
-				// Go to top-right and draw down
+				/* Go to top-right and draw down */
 				line((j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize, (j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, boundaryWidth);
 			} else {
 				//console.log("nhb");
 			};
 		};
 	};
-	// Vertical Boundaries
+	/* Vertical Boundaries */
 	for (i = 0; i < plateCount; i+=1) {
 		for (j = 0; j < mapSize; j+=1) {
 			if (j + mapWidth >= mapSize) {
 				if (plates[i][j] !== plates[i][j - mapSize + mapWidth]) {
 					//console.log("vb");
-					// Go to bottom-left and draw right
+					/* Go to bottom-left and draw right */
 					line((j % mapWidth) * tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, (j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, boundaryWidth);
-					// Then go to top edge of map and draw right
+					/* Then go to top edge of map and draw right */
 					line((j % mapWidth) * tileSize, 0, (j % mapWidth) * tileSize + tileSize, 0, boundaryWidth);
 				} else {
 					//console.log("nvb");
 				};
 			} else if (plates[i][j] !== plates[i][j + mapWidth]) {
 				//console.log("vb");
-				// Go to bottom-left and draw right
+				/* Go to bottom-left and draw right */
 				line((j % mapWidth) * tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, (j % mapWidth) * tileSize + tileSize, Math.floor(j / mapWidth) * tileSize + tileSize, boundaryWidth);
 			} else {
 				//console.log("nvb");
@@ -452,7 +484,7 @@ function drawBoundaries() {
 	//console.log("Lines drawn: " + lineCount);
 };
 
-// Controls
+/* Controls */
 
 document.getElementById('gen').addEventListener('click', gen);
 document.getElementById('move').addEventListener('click', move);
