@@ -7,13 +7,52 @@
 </head>
 <body>
 	<h1>Tile Tectonics</h1>
-	<p>Click Generate Map to start or reset, then alternate between clicking Move Plates and Allocate Tiles to run the simulation. It will be different each time.<p>
-	<button type="button" id="gen">Generate Map</button>
+	<button type="button" id="gen3">Generate Standard Map</button>
+	<button type="button" id="gen2">Generate Small Map</button>
+	<button type="button" id="genl">Generate Large Map</button>
+	<button type="button" id="genr">Generate Rectangular Map</button>
+	<br><br>
 	<button type="button" id="move">Move Plates</button>
-	<button type="button" id="resolve">Allocate Tiles</button>
-	<button type="button" id="fast">Move and Allocate</button>
-	<p id = "round"> </p>
+	<button type="button" id="resolve">Resolve Tiles</button>
+	<button type="button" id="fast">Move and Resolve</button>
+	<br><br>
 	<canvas id="art"></canvas>
 	<script src="./simulation.js"></script>
+	<p id = "round"> </p>
+	<h2>About</h2>
+	<p>This program is a basic plate tectonics simulator. You can generate a new planet 
+	with neat rectangular plates, and watch as those plates change shape through 
+	interactions resembling those found in real life. Try generating a map and clicking
+	the 'Move and Resolve' button a few times to see what happens!</p>
+	<h3>How it works</h3>
+	<p>When you generate a map, what you see is a grid of tiles. Tiles within a black 
+	outlined region belong to a single tectonic plate, and move together around the map.
+	Plates that are green, yellow, or orange are continental, while plates that are blue,
+	purple, or pink are oceanic. Note that the tile grid wraps around on itself, so tiles
+	on the left edge share a border with tiles on the right edge, and tiles on the top
+	row are next to those on the bottom row.</p>
+	<p>When you click the 'Move Plates' button, every plate moves in a certain direction
+	that is randomly selected when you generate the map. (This direction can change from
+	round to round.) However, this will cause plates to overlap, creating a convergent
+	boundary, which is indicated by the tiles in conflict turning red. It will also cause
+	gaps to appear between plates, creating a divergent boundary, which is indicated by
+	the empty tiles turning grey. In real life, there are no gaps between tectonic plates,
+	so these conflicts and empty tiles need to be resolved.</p>
+	<p>Clicking the 'Resolve Tiles' button will resolve these conflicts and empty tiles
+	following a set of predictable rules. Tiles will try to join the neighboring plate
+	with the most tiles around that tile. If there's a tie, tiles in conflict will
+	preference continental plates over oceanic plates, while empty tiles will preference
+	oceanic plates over continental plates. This is because oceanic plates tend to subduct
+	under thicker continental plates when they converge, and oceanic plates tend to expand 
+	when they diverge through the process of seafloor spreading.</p>
+	<p>The standard way to interact with this program is alternate between clicking 'Move
+	Plates' and 'Allocate Tiles' to see what happens in every round of the simulation.
+	But you can speed up the process by clicking the 'Move and Resolve' button, which will
+	do both actions at once. Repeatedly clicking 'Move and Resolve' will effectively
+	animate the simulation, and the results can be quite pretty.</p>
+	<p>This simulation is in no way accurate, as the plates tend to reach an equilibrium
+	after a while, which doesn't happen in real life. In addition, transform faults aren't
+	modeled at all, and plates can easily disappear from the map. But it does show some of
+	the basic interactions of plate tectonics.</p>
 </body>
 </html>

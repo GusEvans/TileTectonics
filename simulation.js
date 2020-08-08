@@ -1,33 +1,31 @@
 'use strict';
 
-/* Preset Variables */
+/* Variables that don't change */
 
-var mapWidth = 12;
-var mapHeight = 12;
-var mapSize = mapWidth * mapHeight;
-var plateCount = 4;
+var canvas = document.getElementById("art");
+var ctx = art.getContext("2d");
+var borderWidth = 2;
+var boundaryWidth = 6;
+var colors = {border: "#FFF", boundary: "#000", conflict: "#E22", empty: "#DDD", oceanic: "#29D", continental: "#8C2"};
+var continentalColors = ["#DA1", "#FC3", "#FE7", "#DE2", "#9E1", "#6C2", "#4F5", "#093", "#7E9"];
+var oceanicColors = ["#8DE", "#0CF", "#38B", "#46F", "#12D", "#98E", "#73E", "#B5E", "#E9E"];
 var plateMoveOptions = ["u", "r", "l", "d", "ur", "ul", "ru", "rd", "dr", "dl", "lu", "ld",
 	"uur", "uru", "ruu", "uul", "ulu", "luu", "rru", "rur", "urr", "rrd", "rdr", "drr",
 	"ddr", "drd", "rdd", "ddl", "dld", "ldd", "llu", "lul", "ull", "lld", "ldl", "dll"];
-var canvas = document.getElementById("art");
-var ctx = art.getContext("2d");
-var tileSize = 36;
-var borderWidth = 2;
-var boundaryWidth = 6;
-canvas.width = mapWidth * tileSize
-canvas.height = mapHeight * tileSize
-var colors = {
-	border: "#FFF",
-	boundary: "#000",
-	oceanic: "#29D",
-	continental: "#8C2",
-	conflict: "#E22",
-	empty: "#DDD"
-};
-var continentalColors = ["#DA1", "#FC3", "#FE7", "#DE2", "#9E1", "#6C2", "#4F5", "#093", "#7E9"];
-var oceanicColors = ["#8DE", "#0CF", "#38B", "#46F", "#12D", "#98E", "#73E", "#B5E", "#E9E"];
+canvas.width = 0;
+canvas.height = 0;
 
-/* Changing Variables */
+/* Variables set in map generation */
+
+var mapWidth;
+var mapHeight;
+var mapSize;
+var rowCount;
+var columnCount;
+var plateCount;
+var tileSize;
+
+/* Variables that change frequently */
 
 var i;
 var j;
@@ -43,6 +41,8 @@ var winners = [];
 var tempSizes = [];
 var tileColor = [];
 var round;
+var offset;
+var offsetLimit;
 var conflicts;
 var competitors;
 var mostInfluence;
@@ -55,10 +55,83 @@ var lineCount;
 
 /* Simulation Functions */
 
-function gen() {
-	//console.log("Generating Map...");
+function gen3() {
+	/* Generation settings */
+	mapWidth = 12;
+	mapHeight = 12;
+	mapSize = mapWidth * mapHeight;
+	rowCount = 3;
+	columnCount = 3;
+	plateCount = rowCount * columnCount;
+	tileSize = 32;
+	canvas.width = mapWidth * tileSize;
+	canvas.height = mapHeight * tileSize;
+	/* Standard setup procedure */
+	plateSetup();
+	plateGen();
 	round = 0;
-	/* To do: add a use for plate types */
+	document.getElementById('round').innerHTML = "Round: " + round;
+	render();
+	console.log("Map Generated!");
+};
+function gen2() {
+	/* Generation settings */
+	mapWidth = 8;
+	mapHeight = 8;
+	mapSize = mapWidth * mapHeight;
+	rowCount = 2;
+	columnCount = 2;
+	plateCount = rowCount * columnCount;
+	tileSize = 40;
+	canvas.width = mapWidth * tileSize;
+	canvas.height = mapHeight * tileSize;
+	/* Standard setup procedure */
+	plateSetup();
+	plateGen();
+	round = 0;
+	document.getElementById('round').innerHTML = "Round: " + round;
+	render();
+	console.log("Map Generated!");
+};
+function genl() {
+	/* Generation settings */
+	mapWidth = 24;
+	mapHeight = 24;
+	mapSize = mapWidth * mapHeight;
+	rowCount = 4;
+	columnCount = 4;
+	plateCount = rowCount * columnCount;
+	tileSize = 20;
+	canvas.width = mapWidth * tileSize;
+	canvas.height = mapHeight * tileSize;
+	/* Standard setup procedure */
+	plateSetup();
+	plateGen();
+	round = 0;
+	document.getElementById('round').innerHTML = "Round: " + round;
+	render();
+	console.log("Map Generated!");
+};
+function genr() {
+	/* Generation settings */
+	mapWidth = 20;
+	mapHeight = 10;
+	mapSize = mapWidth * mapHeight;
+	rowCount = 2;
+	columnCount = 4;
+	plateCount = rowCount * columnCount;
+	tileSize = 36;
+	canvas.width = mapWidth * tileSize;
+	canvas.height = mapHeight * tileSize;
+	/* Standard setup procedure */
+	plateSetup();
+	plateGen();
+	round = 0;
+	document.getElementById('round').innerHTML = "Round: " + round;
+	render();
+	console.log("Map Generated!");
+};
+function plateSetup() {
 	plateTypes = [];
 	for (i = 0; i < plateCount; i+=1) {
 		j = Math.floor(Math.random() * 2);
@@ -84,98 +157,34 @@ function gen() {
 			plates[i].push(false);
 		};
 	};
-	//genSquarePlate(0, 0);
-	//genSquarePlate(1, 4);
-	//genSquarePlate(2, 8);
-	//genSquarePlate(3, 48);
-	//genSquarePlate(4, 52);
-	//genSquarePlate(5, 56);
-	//genSquarePlate(6, 96);
-	//genSquarePlate(7, 100);
-	//genSquarePlate(8, 104);
-	genRectPlate(0, 0);
-	genRectPlate(1, 6);
-	genRectPlate(2, 72);
-	genRectPlate(3, 78);
+};
+function plateGen() {
+	/* Note: This plate generation system is only able to make plates in rectangular grids. */
+	for (i = 0; i < plateCount; i+=1) {
+		offset = Math.floor(i / columnCount) * ((mapHeight / rowCount) * mapWidth) + ((i % columnCount) * (mapWidth / columnCount));
+		offsetLimit = offset + (mapSize / rowCount);
+		//console.log(offset);
+		for (j = 0; j < offset; j+=1) {
+			plates[i][j] = false;
+		};
+		while (offset < offsetLimit) {
+			for (j = offset; j < offset + (mapWidth / columnCount); j+=1) {
+				plates[i][j] = true;
+			};
+			offset = offset + (mapWidth / columnCount);
+			for (j = offset; j < offset + ((columnCount - 1) * (mapWidth / columnCount)); j+=1) {
+				plates[i][j] = false;
+			};
+			offset = offset + ((columnCount - 1) * (mapWidth / columnCount));
+		};
+		for (j = offsetLimit; j < mapSize; j+=1) {
+			plates[i][j] = false;
+		};
+	};
 	//console.log(plates);
-	document.getElementById('round').innerHTML = "Round: " + round;
-	render();
-	console.log("Map Generated!");
-};
-function genSquarePlate(plate, offset) {
-	/* To do: generalize this process and make it more efficient */
-	for (i = 0; i < offset; i+=1) {
-		plates[plate][i] = false;
-	};
-	for (i = offset; i < offset + 4; i+=1) {
-		plates[plate][i] = true;
-	};
-	for (i = offset + 4; i < offset + 12; i+=1) {
-		plates[plate][i] = false;
-	};
-	for (i = offset + 12; i < offset + 16; i+=1) {
-		plates[plate][i] = true;
-	};
-	for (i = offset + 16; i < offset + 24; i+=1) {
-		plates[plate][i] = false;
-	};
-	for (i = offset + 24; i < offset + 28; i+=1) {
-		plates[plate][i] = true;
-	};
-	for (i = offset + 28; i < offset + 36; i+=1) {
-		plates[plate][i] = false;
-	};
-	for (i = offset + 36; i < offset + 40; i+=1) {
-		plates[plate][i] = true;
-	};
-	for (i = offset + 40; i < mapSize; i+=1) {
-		plates[plate][i] = false;
-	};
-};
-function genRectPlate(plate, offset) {
-	for (i = 0; i < offset; i+=1) {
-		plates[plate][i] = false;
-	};
-	for (i = offset; i < offset + 6; i+=1) {
-		plates[plate][i] = true;
-	};
-	for (i = offset + 6; i < offset + 12; i+=1) {
-		plates[plate][i] = false;
-	};
-	for (i = offset + 12; i < offset + 18; i+=1) {
-		plates[plate][i] = true;
-	};
-	for (i = offset + 18; i < offset + 24; i+=1) {
-		plates[plate][i] = false;
-	};
-	for (i = offset + 24; i < offset + 30; i+=1) {
-		plates[plate][i] = true;
-	};
-	for (i = offset + 30; i < offset + 36; i+=1) {
-		plates[plate][i] = false;
-	};
-	for (i = offset + 36; i < offset + 42; i+=1) {
-		plates[plate][i] = true;
-	};
-	for (i = offset + 42; i < offset + 48; i+=1) {
-		plates[plate][i] = false;
-	};
-	for (i = offset + 48; i < offset + 54; i+=1) {
-		plates[plate][i] = true;
-	};
-	for (i = offset + 54; i < offset + 60; i+=1) {
-		plates[plate][i] = false;
-	};
-	for (i = offset + 60; i < offset + 66; i+=1) {
-		plates[plate][i] = true;
-	};
-	for (i = offset + 66; i < mapSize; i+=1) {
-		plates[plate][i] = false;
-	};
 };
 
 function move() {
-	//console.log("Moving Plates...");
 	round += 0.5;
 	for (i = 0; i < plateCount; i+=1) {
 		tempPlate = [];
@@ -260,7 +269,6 @@ function move() {
 };
 
 function resolve() {
-	//console.log("Allocating Tiles...");
 	round += 0.5;
 	conflicts = 0;
 	interPlate = [];
@@ -279,6 +287,7 @@ function resolve() {
 			};
 		};
 	};
+	/* The main loop */
 	for (i = 0; i < mapSize; i+=1) {
 		/* How many plates is tile i in? */
 		competitors = 0;
@@ -417,7 +426,7 @@ function resolve() {
 				/* Get plate sizes (To do: use these copying methods in more places) */
 				tempSizes = Array.from(plateSizes);
 				//console.log(tempSizes);	
-				/* Eliminate sizes of non-winners (To do: combine this step with another one somehow) */
+				/* Eliminate sizes of non-winners */
 				smallestPlate = 0;
 				for (j = 0; j < plateCount; j+=1) {
 					if (!winners.includes(j)) {
@@ -441,7 +450,7 @@ function resolve() {
 	//console.log(plates);
 	document.getElementById('round').innerHTML = "Round: " + round;
 	render();
-	console.log("Tiles Allocated!");
+	console.log("Tiles Resolved!");
 };
 
 function moveResolve() {
@@ -477,21 +486,29 @@ function drawGrid() {
 		};
 		//console.log(tileColor);
 		if (tileColor.length == 0) {
-			square(column * tileSize, row * tileSize, colors.empty,);
+			square(column * tileSize, row * tileSize, colors.empty);
 			//console.log("empty");
 		};
 		if (tileColor.length > 1) {
-			square(column * tileSize, row * tileSize, colors.conflict,);
+			square(column * tileSize, row * tileSize, colors.conflict);
 			//console.log("conflict");
 		};
 		if (tileColor.length == 1) {
-			if (plateTypes[tileColor[0]] == "continental") {
-				square(column * tileSize, row * tileSize, continentalColors[tileColor[0]],);
-				//console.log("continental");
-			};
-			if (plateTypes[tileColor[0]] == "oceanic") {
-				square(column * tileSize, row * tileSize, oceanicColors[tileColor[0]],);
-				//console.log("oceanic");
+			if (plateCount > continentalColors.length) {
+				if (plateTypes[tileColor[0]] == "continental") {
+					square(column * tileSize, row * tileSize, colors.continental);
+				} else {
+					square(column * tileSize, row * tileSize, colors.oceanic);
+				};
+			} else {
+				if (plateTypes[tileColor[0]] == "continental") {
+					square(column * tileSize, row * tileSize, continentalColors[tileColor[0]]);
+					//console.log("continental");
+				};
+				if (plateTypes[tileColor[0]] == "oceanic") {
+					square(column * tileSize, row * tileSize, oceanicColors[tileColor[0]]);
+					//console.log("oceanic");
+				};
 			};
 		};
 		column += 1;
@@ -564,7 +581,10 @@ function drawBoundaries() {
 
 /* Controls */
 
-document.getElementById('gen').addEventListener('click', gen);
+document.getElementById('gen3').addEventListener('click', gen3);
+document.getElementById('gen2').addEventListener('click', gen2);
+document.getElementById('genl').addEventListener('click', genl);
+document.getElementById('genr').addEventListener('click', genr);
 document.getElementById('move').addEventListener('click', move);
 document.getElementById('resolve').addEventListener('click', resolve);
 document.getElementById('fast').addEventListener('click', moveResolve);
