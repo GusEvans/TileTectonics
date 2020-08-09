@@ -12,8 +12,6 @@ var oceanicColors = ["#8DE", "#0CF", "#38B", "#46F", "#12D", "#98E", "#73E", "#B
 var plateMoveOptions = ["u", "r", "l", "d", "ur", "ul", "ru", "rd", "dr", "dl", "lu", "ld",
 	"uur", "uru", "ruu", "uul", "ulu", "luu", "rru", "rur", "urr", "rrd", "rdr", "drr",
 	"ddr", "drd", "rdd", "ddl", "dld", "ldd", "llu", "lul", "ull", "lld", "ldl", "dll"];
-canvas.width = 0;
-canvas.height = 0;
 
 /* Variables set in map generation */
 
@@ -76,13 +74,13 @@ function gen3() {
 };
 function gen2() {
 	/* Generation settings */
-	mapWidth = 8;
-	mapHeight = 8;
+	mapWidth = 10;
+	mapHeight = 10;
 	mapSize = mapWidth * mapHeight;
 	rowCount = 2;
 	columnCount = 2;
 	plateCount = rowCount * columnCount;
-	tileSize = 40;
+	tileSize = 36;
 	canvas.width = mapWidth * tileSize;
 	canvas.height = mapHeight * tileSize;
 	/* Standard setup procedure */
@@ -93,7 +91,7 @@ function gen2() {
 	render();
 	console.log("Map Generated!");
 };
-function genl() {
+function genL() {
 	/* Generation settings */
 	mapWidth = 24;
 	mapHeight = 24;
@@ -112,7 +110,7 @@ function genl() {
 	render();
 	console.log("Map Generated!");
 };
-function genr() {
+function genR() {
 	/* Generation settings */
 	mapWidth = 20;
 	mapHeight = 10;
@@ -172,8 +170,10 @@ function plateGen() {
 				plates[i][j] = true;
 			};
 			offset = offset + (mapWidth / columnCount);
-			for (j = offset; j < offset + ((columnCount - 1) * (mapWidth / columnCount)); j+=1) {
-				plates[i][j] = false;
+			if (offset + ((columnCount - 1) * (mapWidth / columnCount)) < mapWidth) {
+				for (j = offset; j < offset + ((columnCount - 1) * (mapWidth / columnCount)); j+=1) {
+					plates[i][j] = false;
+				};
 			};
 			offset = offset + ((columnCount - 1) * (mapWidth / columnCount));
 		};
@@ -400,7 +400,6 @@ function resolve() {
 							//console.log("REMOVE THE CONTINENTALS!")
 							for (k = winnerCount; k > 0; k-=1) {
 								if (plateTypes[winners[k]] == "continental") {
-									/* To do: find if this system actually works like it's supposed to */
 									//console.log("Removed plate " + winners[k])
 									winners.splice(k, 1);
 								};
@@ -423,7 +422,7 @@ function resolve() {
 					};
 				};
 				//console.log(winners);
-				/* Get plate sizes (To do: use these copying methods in more places) */
+				/* Get the plate sizes */
 				tempSizes = Array.from(plateSizes);
 				//console.log(tempSizes);	
 				/* Eliminate sizes of non-winners */
@@ -583,8 +582,8 @@ function drawBoundaries() {
 
 document.getElementById('gen3').addEventListener('click', gen3);
 document.getElementById('gen2').addEventListener('click', gen2);
-document.getElementById('genl').addEventListener('click', genl);
-document.getElementById('genr').addEventListener('click', genr);
+document.getElementById('genl').addEventListener('click', genL);
+document.getElementById('genr').addEventListener('click', genR);
 document.getElementById('move').addEventListener('click', move);
 document.getElementById('resolve').addEventListener('click', resolve);
 document.getElementById('fast').addEventListener('click', moveResolve);

@@ -40,19 +40,26 @@
 	so these conflicts and empty tiles need to be resolved.</p>
 	<p>Clicking the 'Resolve Tiles' button will resolve these conflicts and empty tiles
 	following a set of predictable rules. Tiles will try to join the neighboring plate
-	with the most tiles around that tile. If there's a tie, tiles in conflict will
-	preference continental plates over oceanic plates, while empty tiles will preference
-	oceanic plates over continental plates. This is because oceanic plates tend to subduct
-	under thicker continental plates when they converge, and oceanic plates tend to expand 
-	when they diverge through the process of seafloor spreading.</p>
+	with the most tiles around that tile. If there's a tie, tiles will check which plates
+	are the most prominent in their neighboring tiles and join the smallest one, though
+	tiles in conflict will preference continental plates over oceanic plates, while empty
+	tiles will preference oceanic plates over continental plates. This is because oceanic
+	plates tend to subduct under thicker continental plates when they converge, and 
+	oceanic plates tend to expand when they diverge through the process of seafloor
+	spreading.</p>
 	<p>The standard way to interact with this program is alternate between clicking 'Move
 	Plates' and 'Allocate Tiles' to see what happens in every round of the simulation.
 	But you can speed up the process by clicking the 'Move and Resolve' button, which will
 	do both actions at once. Repeatedly clicking 'Move and Resolve' will effectively
-	animate the simulation, and the results can be quite pretty.</p>
-	<p>This simulation is in no way accurate, as the plates tend to reach an equilibrium
+	animate the simulation, and the results can look quite cool. (Try to avoid clicking
+	'Move Plates' multiple times in a row, as that can make things behave weirdly.)</p>
+	<p>This simulation is in no way realistic, as the plates tend to reach an equilibrium
 	after a while, which doesn't happen in real life. In addition, transform faults aren't
 	modeled at all, and plates can easily disappear from the map. But it does show some of
 	the basic interactions of plate tectonics.</p>
+	<h3>Other notes</h3>
+	<p>The source code for this program can be found <a href="https://github.com/GusEvans/
+	TileTectonics">here</a> if you want to see how it works. Other coding projects of mine
+	can be found <a href="https://gusevans.github.io/">here</a>.</p>
 </body>
 </html>
