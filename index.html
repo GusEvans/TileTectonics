@@ -7,23 +7,25 @@
 </head>
 <body>
 	<h1>Tile Tectonics</h1>
-	<button type="button" id="gen3">Generate Standard Map</button>
-	<button type="button" id="gen2">Generate Small Map</button>
-	<button type="button" id="genl">Generate Large Map</button>
-	<button type="button" id="genr">Generate Rectangular Map</button>
+	<button type="button" id="gen3">Generate standard map</button>
+	<button type="button" id="gen2">Generate small map</button>
+	<button type="button" id="genl">Generate large map</button>
+	<button type="button" id="genr">Generate rectangular map</button>
+	<button type="button" id="genc">Generate from map code</button>
 	<br><br>
-	<button type="button" id="move">Move Plates</button>
-	<button type="button" id="resolve">Resolve Tiles</button>
-	<button type="button" id="fast">Move and Resolve</button>
+	<button type="button" id="move">Move plates</button>
+	<button type="button" id="resolve">Resolve tiles</button>
+	<button type="button" id="fast">Move and resolve</button>
 	<br><br>
 	<canvas id="art"></canvas>
 	<script src="./simulation.js"></script>
 	<p id = "round"> </p>
+	<p id = "code"> </p>
 	<h2>About</h2>
 	<p>This program is a basic plate tectonics simulator. You can generate a new planet 
 	with neat rectangular plates, and watch as those plates change shape through 
 	interactions resembling those found in real life. Try generating a map and clicking
-	the 'Move and Resolve' button a few times to see what happens!</p>
+	the 'Move and resolve' button a few times to see what happens!</p>
 	<h3>How it works</h3>
 	<p>When you generate a map, what you see is a grid of tiles. Tiles within a black 
 	outlined region belong to a single tectonic plate, and move together around the map.
@@ -31,14 +33,14 @@
 	purple, or pink are oceanic. Note that the tile grid wraps around on itself, so tiles
 	on the left edge share a border with tiles on the right edge, and tiles on the top
 	row are next to those on the bottom row.</p>
-	<p>When you click the 'Move Plates' button, every plate moves in a certain direction
+	<p>When you click the 'Move plates' button, every plate moves in a certain direction
 	that is randomly selected when you generate the map. (This direction can change from
 	round to round.) However, this will cause plates to overlap, creating a convergent
 	boundary, which is indicated by the tiles in conflict turning red. It will also cause
 	gaps to appear between plates, creating a divergent boundary, which is indicated by
 	the empty tiles turning grey. In real life, there are no gaps between tectonic plates,
 	so these conflicts and empty tiles need to be resolved.</p>
-	<p>Clicking the 'Resolve Tiles' button will resolve these conflicts and empty tiles
+	<p>Clicking the 'Resolve tiles' button will resolve these conflicts and empty tiles
 	following a set of predictable rules. Tiles will try to join the neighboring plate
 	with the most tiles around that tile. If there's a tie, tiles will check which plates
 	are the most prominent in their neighboring tiles and join the smallest one, though
@@ -48,16 +50,25 @@
 	oceanic plates tend to expand when they diverge through the process of seafloor
 	spreading.</p>
 	<p>The standard way to interact with this program is alternate between clicking 'Move
-	Plates' and 'Allocate Tiles' to see what happens in every round of the simulation.
-	But you can speed up the process by clicking the 'Move and Resolve' button, which will
-	do both actions at once. Repeatedly clicking 'Move and Resolve' will effectively
-	animate the simulation, and the results can look quite cool. (Try to avoid clicking
-	'Move Plates' multiple times in a row, as that can make things behave weirdly.)</p>
+	plates' and 'Resolve tiles' to see what happens in every round of the simulation. But
+	you can speed up the process by clicking the 'Move and resolve' button, which will do
+	both actions at once. Repeatedly clicking 'Move and resolve' will effectively animate
+	the simulation, and the results can look quite cool. (Try to avoid clicking 'Move
+	plates' multiple times in a row, as that can make things behave incorrectly.)</p>
 	<p>This simulation is in no way realistic, as the plates tend to reach an equilibrium
 	after a while, which doesn't happen in real life. In addition, transform faults aren't
 	modeled at all, and plates can easily disappear from the map. But it does show some of
 	the basic interactions of plate tectonics.</p>
 	<h3>Other notes</h3>
+	<p>You can use map codes to save plate simulations for viewing again. A map code will
+	be generated with each map, and will appear below it. The code starts with the first
+	number and ends with the last letter. By clicking the 'Generate from map code' button
+	and pasting in the code, a particular map can be simulated exactly the same as it was
+	originally. The code consists of numbers for the width and height of the map in tiles,
+	the number of columns and rows of plates, and the size of the tiles, followed by
+	letters for the type of each plate (continental or oceanic), followed by letters for
+	the sequence of directions each plate moves in. By changing these values, it's
+	possible to create maps with custom sizes and movement patterns.</p>
 	<p>The source code for this program can be found <a href="https://github.com/GusEvans/
 	TileTectonics">here</a> if you want to see how it works. Other coding projects of mine
 	can be found <a href="https://gusevans.github.io/">here</a>.</p>

@@ -18,8 +18,8 @@ var plateMoveOptions = ["u", "r", "l", "d", "ur", "ul", "ru", "rd", "dr", "dl", 
 var mapWidth;
 var mapHeight;
 var mapSize;
-var rowCount;
 var columnCount;
+var rowCount;
 var plateCount;
 var tileSize;
 
@@ -38,7 +38,9 @@ var competition = [];
 var winners = [];
 var tempSizes = [];
 var tileColor = [];
+var mapCode = [];
 var round;
+var mapCodeString;
 var offset;
 var offsetLimit;
 var conflicts;
@@ -58,8 +60,8 @@ function gen3() {
 	mapWidth = 12;
 	mapHeight = 12;
 	mapSize = mapWidth * mapHeight;
-	rowCount = 3;
 	columnCount = 3;
+	rowCount = 3;
 	plateCount = rowCount * columnCount;
 	tileSize = 32;
 	canvas.width = mapWidth * tileSize;
@@ -70,17 +72,18 @@ function gen3() {
 	round = 0;
 	document.getElementById('round').innerHTML = "Round: " + round;
 	render();
+	saveMapCode()
 	console.log("Map Generated!");
 };
 function gen2() {
 	/* Generation settings */
-	mapWidth = 10;
-	mapHeight = 10;
+	mapWidth = 8;
+	mapHeight = 8;
 	mapSize = mapWidth * mapHeight;
-	rowCount = 2;
 	columnCount = 2;
+	rowCount = 2;
 	plateCount = rowCount * columnCount;
-	tileSize = 36;
+	tileSize = 40;
 	canvas.width = mapWidth * tileSize;
 	canvas.height = mapHeight * tileSize;
 	/* Standard setup procedure */
@@ -89,6 +92,7 @@ function gen2() {
 	round = 0;
 	document.getElementById('round').innerHTML = "Round: " + round;
 	render();
+	saveMapCode()
 	console.log("Map Generated!");
 };
 function genL() {
@@ -96,8 +100,8 @@ function genL() {
 	mapWidth = 24;
 	mapHeight = 24;
 	mapSize = mapWidth * mapHeight;
-	rowCount = 4;
 	columnCount = 4;
+	rowCount = 4;
 	plateCount = rowCount * columnCount;
 	tileSize = 20;
 	canvas.width = mapWidth * tileSize;
@@ -108,6 +112,7 @@ function genL() {
 	round = 0;
 	document.getElementById('round').innerHTML = "Round: " + round;
 	render();
+	saveMapCode()
 	console.log("Map Generated!");
 };
 function genR() {
@@ -115,8 +120,8 @@ function genR() {
 	mapWidth = 20;
 	mapHeight = 10;
 	mapSize = mapWidth * mapHeight;
-	rowCount = 2;
 	columnCount = 4;
+	rowCount = 2;
 	plateCount = rowCount * columnCount;
 	tileSize = 36;
 	canvas.width = mapWidth * tileSize;
@@ -127,11 +132,64 @@ function genR() {
 	round = 0;
 	document.getElementById('round').innerHTML = "Round: " + round;
 	render();
+	saveMapCode()
+	console.log("Map Generated!");
+};
+function genC() {
+	/* Decode map code */
+	mapCodeString = prompt("Please paste your map code here.");
+	mapCode = mapCodeString.split(",");
+	//console.log(mapCode);
+	for (i = 0; i < 5; i+=1) {
+		mapCode[i] = parseInt(mapCode[i]);
+	};
+	//console.log(mapCode);
+	/* Generation settings */
+	mapWidth = mapCode[0];
+	mapHeight = mapCode[1];
+	mapSize = mapWidth * mapHeight;
+	columnCount = mapCode[2];
+	rowCount = mapCode[3];
+	plateCount = rowCount * columnCount;
+	tileSize = mapCode[4];
+	canvas.width = mapWidth * tileSize;
+	canvas.height = mapHeight * tileSize;
+	/* Special plate setup */
+	plateTypes = [];
+	for (i = 0; i < plateCount; i+=1) {
+		if (mapCode[i + 5] == "c") {
+			plateTypes[i] = "continental";
+		} else {
+			plateTypes[i] = "oceanic";
+		};
+	};
+	console.log(plateTypes);
+	for (i = 0; i < plateCount; i+=1) {
+		plateMoves[i] = mapCode[i + 5 + plateCount];
+	};
+	console.log(plateMoves);
+	/* Initialize the plates array */
+	plates = [];
+	for (i = 0; i < plateCount; i+=1) {
+		plates.push([]);
+	};
+	for (i = 0; i < plateCount; i+=1) {
+		for (j = 0; j < mapSize; j+=1) {
+			plates[i].push(false);
+		};
+	};
+	/* Standard setup procedure */
+	plateGen();
+	round = 0;
+	document.getElementById('round').innerHTML = "Round: " + round;
+	render();
+	saveMapCode()
 	console.log("Map Generated!");
 };
 function plateSetup() {
 	plateTypes = [];
 	for (i = 0; i < plateCount; i+=1) {
+		/* Note: Each plate has an equal chance of being each type. */
 		j = Math.floor(Math.random() * 2);
 		if (j == 0) {
 			plateTypes.push("continental");
@@ -146,6 +204,7 @@ function plateSetup() {
 		plateMoves[i] = plateMoveOptions[j];
 	};
 	console.log(plateMoves);
+	/* This initializes the plates array, just in case something goes wrong in plate generation. */
 	plates = [];
 	for (i = 0; i < plateCount; i+=1) {
 		plates.push([]);
@@ -181,7 +240,7 @@ function plateGen() {
 			plates[i][j] = false;
 		};
 	};
-	//console.log(plates);
+	console.log(plates);
 };
 
 function move() {
@@ -261,7 +320,7 @@ function move() {
 			continue;
 		};
 	};
-	//console.log(plates);
+	console.log(plates);
 	//console.log(plateMoves);
 	document.getElementById('round').innerHTML = "Round: " + round;
 	render();
@@ -422,7 +481,7 @@ function resolve() {
 					};
 				};
 				//console.log(winners);
-				/* Get the plate sizes */
+				/* Get plate sizes */
 				tempSizes = Array.from(plateSizes);
 				//console.log(tempSizes);	
 				/* Eliminate sizes of non-winners */
@@ -446,7 +505,7 @@ function resolve() {
 		};
 	};
 	plates = interPlate;
-	//console.log(plates);
+	console.log(plates);
 	document.getElementById('round').innerHTML = "Round: " + round;
 	render();
 	console.log("Tiles Resolved!");
@@ -455,6 +514,29 @@ function resolve() {
 function moveResolve() {
 	move();
 	resolve();
+};
+
+function saveMapCode() {
+	/* The syntax for map codes is: mapWidth,mapHeight,columnCount,rowCount,tileSize,[list of plate types separated by commas],[list of plate movements separated by commas] */
+	mapCode = [];
+	mapCode.push(mapWidth);
+	mapCode.push(mapHeight);
+	mapCode.push(columnCount);
+	mapCode.push(rowCount);
+	mapCode.push(tileSize);
+	for (i = 0; i < rowCount * columnCount; i+=1) {
+		if (plateTypes[i] == "continental") {
+			mapCode.push("c");
+		};
+		if (plateTypes[i] == "oceanic") {
+			mapCode.push("o");
+		};
+	};
+	for (i = 0; i < rowCount * columnCount; i+=1) {
+		mapCode.push(plateMoves[i]);
+	};
+	mapCodeString = mapCode.toString();
+	document.getElementById('code').innerHTML = "Map code: " + mapCodeString;
 };
 
 /* Rendering Functions */
@@ -584,6 +666,7 @@ document.getElementById('gen3').addEventListener('click', gen3);
 document.getElementById('gen2').addEventListener('click', gen2);
 document.getElementById('genl').addEventListener('click', genL);
 document.getElementById('genr').addEventListener('click', genR);
+document.getElementById('genc').addEventListener('click', genC);
 document.getElementById('move').addEventListener('click', move);
 document.getElementById('resolve').addEventListener('click', resolve);
 document.getElementById('fast').addEventListener('click', moveResolve);
